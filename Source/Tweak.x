@@ -173,7 +173,6 @@ static NSDictionary<NSString *, NSString *> *hebrewTranslations(void) {
             @"Archive":                     @"ארכיון",
             @"Your Activity":               @"הפעילות שלך",
             @"Your activity":               @"הפעילות שלך",
-            @"Saved":                       @"שמורים",
             @"QR Code":                     @"קוד QR",
             @"Favorites":                   @"מועדפים",
             @"Discover People":             @"גלה אנשים",
