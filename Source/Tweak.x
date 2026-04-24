@@ -288,43 +288,89 @@ static NSDictionary<NSString *, NSString *> *hebrewTranslations(void) {
 }
 
 // MARK: - NSBundle Hook for Hebrew Localization
-// This is the ONLY hook we use - it's safe because we check the bundle identifier first.
 
 %hook NSBundle
 
 - (NSString *)localizedStringForKey:(NSString *)key value:(NSString *)value table:(NSString *)tableName {
     NSString *original = %orig;
 
-    // Safety: ignore empty/nil keys
-    if (!key || key.length == 0) {
-        return original;
-    }
+    if (!key || key.length == 0) return original;
 
-    // Only intercept strings from the Instagram main bundle - this is critical!
     BOOL isInstagramBundle = [self.bundleIdentifier isEqualToString:@"com.burbn.instagram"] ||
                              [self.bundlePath containsString:@"Instagram.app"];
 
-    if (!isInstagramBundle) {
-        return original;
-    }
+    if (!isInstagramBundle) return original;
 
-    // Strategy 1: Try direct key match in our Hebrew dictionary
-    NSString *hebrewByKey = hebrewTranslations()[key];
-    if (hebrewByKey) {
-        return hebrewByKey;
-    }
+    // Try key first, then resolved value
+    NSString *hebrew = hebrewTranslations()[key] ?: hebrewTranslations()[original];
+    return hebrew ?: original;
+}
 
-    // Strategy 2: Try matching the resolved English value
-    // This catches cases where Instagram uses internal keys (e.g. "ig_home_label")
-    // but the resolved value is English text we know (e.g. "Home")
-    if (original && original.length > 0 && ![original isEqualToString:key]) {
-        NSString *hebrewByValue = hebrewTranslations()[original];
-        if (hebrewByValue) {
-            return hebrewByValue;
+// Instagram uses NSBundle category methods for localization internally
+- (NSString *)ig_localizedStringForKey:(NSString *)key {
+    NSString *original = %orig;
+    if (!key || key.length == 0) return original;
+    return hebrewTranslations()[key] ?: hebrewTranslations()[original] ?: original;
+}
+
+%end
+
+// MARK: - UILabel Hook (safe - only runs inside Instagram due to plist filter)
+// Instagram sets text directly on labels, bypassing NSBundle in many places.
+// NOTE: Since InstagramHebrew.plist restricts injection to com.burbn.instagram,
+//       these hooks ONLY run inside the Instagram process - not system-wide.
+
+%hook UILabel
+
+- (void)setText:(NSString *)text {
+    @try {
+        if (text && text.length > 0 && text.length < 150) {
+            NSString *hebrew = hebrewTranslations()[text];
+            if (hebrew) {
+                %orig(hebrew);
+                return;
+            }
         }
-    }
+    } @catch (NSException *e) { }
+    %orig;
+}
 
-    return original;
+%end
+
+// MARK: - UIButton Hook (safe)
+
+%hook UIButton
+
+- (void)setTitle:(NSString *)title forState:(UIControlState)state {
+    @try {
+        if (title && title.length > 0 && title.length < 100) {
+            NSString *hebrew = hebrewTranslations()[title];
+            if (hebrew) {
+                %orig(hebrew, state);
+                return;
+            }
+        }
+    } @catch (NSException *e) { }
+    %orig;
+}
+
+%end
+
+// MARK: - UINavigationItem Hook (safe)
+
+%hook UINavigationItem
+
+- (void)setTitle:(NSString *)title {
+    @try {
+        if (title && title.length > 0 && title.length < 100) {
+            NSString *hebrew = hebrewTranslations()[title];
+            if (hebrew) {
+                %orig(hebrew);
+                return;
+            }
+        }
+    } @catch (NSException *e) { }
+    %orig;
 }
 
 %end
