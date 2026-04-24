@@ -288,15 +288,23 @@ static NSDictionary<NSString *, NSString *> *hebrewTranslations(void) {
 }
 
 // MARK: - NSBundle Hook for Hebrew Localization
+// This is the ONLY hook we use - it's safe because we check the bundle identifier first.
 
 %hook NSBundle
 
 - (NSString *)localizedStringForKey:(NSString *)key value:(NSString *)value table:(NSString *)tableName {
     NSString *original = %orig;
 
-    // Only intercept strings from the Instagram main bundle
-    if (![self.bundleIdentifier isEqualToString:@"com.burbn.instagram"] &&
-        ![self.bundlePath containsString:@"Instagram.app"]) {
+    // Safety: ignore empty/nil keys
+    if (!key || key.length == 0) {
+        return original;
+    }
+
+    // Only intercept strings from the Instagram main bundle - this is critical!
+    BOOL isInstagramBundle = [self.bundleIdentifier isEqualToString:@"com.burbn.instagram"] ||
+                             [self.bundlePath containsString:@"Instagram.app"];
+
+    if (!isInstagramBundle) {
         return original;
     }
 
@@ -306,106 +314,17 @@ static NSDictionary<NSString *, NSString *> *hebrewTranslations(void) {
         return hebrewByKey;
     }
 
-    // Strategy 2: Try matching the original (resolved) value
-    // This catches cases where Instagram uses internal keys but we know the English text
-    NSString *hebrewByValue = hebrewTranslations()[original];
-    if (hebrewByValue) {
-        return hebrewByValue;
-    }
-
-    // Strategy 3: Check our own bundle for a matching localization key
-    NSBundle *hebrewBundle = [NSBundle ighe_defaultBundle];
-    if (hebrewBundle) {
-        NSString *hebrewFromBundle = [hebrewBundle localizedStringForKey:key value:nil table:tableName];
-        if (hebrewFromBundle && ![hebrewFromBundle isEqualToString:key]) {
-            return hebrewFromBundle;
+    // Strategy 2: Try matching the resolved English value
+    // This catches cases where Instagram uses internal keys (e.g. "ig_home_label")
+    // but the resolved value is English text we know (e.g. "Home")
+    if (original && original.length > 0 && ![original isEqualToString:key]) {
+        NSString *hebrewByValue = hebrewTranslations()[original];
+        if (hebrewByValue) {
+            return hebrewByValue;
         }
     }
 
     return original;
-}
-
-%end
-
-// MARK: - UILabel Hook for dynamic text replacement
-// Some UI elements set text directly, not through NSBundle localization.
-// This hook catches those cases.
-
-%hook UILabel
-
-- (void)setText:(NSString *)text {
-    if (text && text.length > 0 && text.length < 200) {
-        NSString *hebrew = hebrewTranslations()[text];
-        if (hebrew) {
-            %orig(hebrew);
-            return;
-        }
-    }
-    %orig;
-}
-
-%end
-
-// MARK: - UIButton Hook for button titles
-%hook UIButton
-
-- (void)setTitle:(NSString *)title forState:(UIControlState)state {
-    if (title && title.length > 0 && title.length < 100) {
-        NSString *hebrew = hebrewTranslations()[title];
-        if (hebrew) {
-            %orig(hebrew, state);
-            return;
-        }
-    }
-    %orig;
-}
-
-%end
-
-// MARK: - Navigation Bar title translation
-%hook UINavigationItem
-
-- (void)setTitle:(NSString *)title {
-    if (title && title.length > 0 && title.length < 100) {
-        NSString *hebrew = hebrewTranslations()[title];
-        if (hebrew) {
-            %orig(hebrew);
-            return;
-        }
-    }
-    %orig;
-}
-
-%end
-
-// MARK: - UITextField placeholder translation
-%hook UITextField
-
-- (void)setPlaceholder:(NSString *)placeholder {
-    if (placeholder && placeholder.length > 0 && placeholder.length < 200) {
-        NSString *hebrew = hebrewTranslations()[placeholder];
-        if (hebrew) {
-            %orig(hebrew);
-            return;
-        }
-    }
-    %orig;
-}
-
-%end
-
-// MARK: - Tab Bar Item title translation
-%hook UITabBarItem
-
-- (void)setTitle:(NSString *)title {
-    if (title && title.length > 0) {
-        NSString *hebrew = hebrewTranslations()[title];
-        if (hebrew) {
-            %orig(hebrew);
-            return;
-        }
-    }
-    %orig;
 }
 
 %end
