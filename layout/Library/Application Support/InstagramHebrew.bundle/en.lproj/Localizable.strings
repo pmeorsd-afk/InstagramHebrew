@@ -1,0 +1,33 @@
+/* English Fallback Strings - InstagramHebrew */
+
+/* Tab Bar */
+"Home" = "Home";
+"Search" = "Search";
+"Reels" = "Reels";
+"Shop" = "Shop";
+"Profile" = "Profile";
+"Notifications" = "Notifications";
+
+/* Profile */
+"Edit Profile" = "Edit Profile";
+"Share Profile" = "Share Profile";
+"Posts" = "Posts";
+"Followers" = "Followers";
+"Following" = "Following";
+
+/* Actions */
+"Follow" = "Follow";
+"Unfollow" = "Unfollow";
+"Message" = "Message";
+"Like" = "Like";
+"Comment" = "Comment";
+"Share" = "Share";
+"Save" = "Save";
+
+/* General */
+"Cancel" = "Cancel";
+"Done" = "Done";
+"OK" = "OK";
+"Delete" = "Delete";
+"Close" = "Close";
+"Settings" = "Settings";

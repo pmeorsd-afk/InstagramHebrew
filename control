@@ -1,0 +1,9 @@
+Package: com.avimiara.instagramhebrew
+Name: InstagramHebrew
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: Hebrew translation for Instagram - תרגום עברי לאינסטגרם
+Maintainer: Avi Miara
+Author: Avi Miara
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
