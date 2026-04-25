@@ -273,7 +273,6 @@ static NSDictionary<NSString *, NSString *> *hebrewTranslations(void) {
             // Enter Confirmation Code
             // ═══════════════════════════════════════════
             @"Enter confirmation code":         @"הזן קוד אימות",
-            @"Enter code":                      @"הזן קוד",
             @"Get code via SMS instead":        @"קבל קוד באמצעות SMS במקום",
             @"Enter the 6-digit code":          @"הזן את הקוד בן 6 הספרות",
 
@@ -361,7 +360,6 @@ static NSDictionary<NSString *, NSString *> *hebrewTranslations(void) {
             @"Not now":                     @"לא עכשיו",
             @"Public":                      @"ציבורי",
             @"Private":                     @"פרטי",
-            @"Search":                      @"חיפוש",
 
             // ═══════════════════════════════════════════
             // Time
