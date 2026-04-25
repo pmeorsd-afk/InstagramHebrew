@@ -253,12 +253,22 @@ static void showSplash(UIWindow *window) {
 }
 
 // MARK: - UIWindow Hook to trigger splash screen
+// Only show the splash on the MAIN app window, not on any overlay/auth window.
+// This prevents crashes when the Sign Up flow opens its own UIWindow.
 
 %hook UIWindow
 
 - (void)makeKeyAndVisible {
     %orig;
-    showSplash(self);
+
+    // Only trigger splash on the primary app window.
+    // Registration / web-auth windows have a nil windowScene or a different level.
+    // We check windowLevel == UIWindowLevelNormal to skip alerts/overlays.
+    @try {
+        if (self.windowLevel == UIWindowLevelNormal && !splashHasShown) {
+            showSplash(self);
+        }
+    } @catch (NSException *e) { }
 }
 
 %end
